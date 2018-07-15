@@ -119,4 +119,73 @@ router.post(
   }
 );
 
+// @route   POST api/posts/unlike/:id
+// @desc    Unlike specific post
+// @access  private
+router.post(
+  "/unlike/:id",
+  passposrt.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      Post.findById(req.params.id)
+        .then(post => {
+          // check to see if user has already liked post (if their id is in the array)
+          if (
+            post.likes.filter(like => like.user.toString() === req.user.id)
+              .length === 0
+          ) {
+            return res
+              .status(400)
+              .json({ notliked: "You have not yet liked this post" });
+          }
+
+          // Get the remove index so we know which like to remove
+          const removeIndex = post.likes
+            .map(item => item.user.toString())
+            .indexOf(req.user.id);
+
+          // splice that user id out of likes array
+          post.likes.splice(removeIndex, 1);
+
+          // save new array without that user id to db
+          post.save().then(post => res.json(post));
+        })
+        .catch(err => res.status(404).json({ postnotfound: "No post found" }));
+    });
+  }
+);
+
+// @route   POST api/posts/comment/:id
+// @desc    Comment on a specific post
+// @access  private
+router.post(
+  "/comment/:id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const { errors, isValis } = validatePostInput(req.body);
+
+    // Check validation
+    if (!isValid) {
+      // if any errors, send 400 with errors obj
+      return res.status(400).json(errors);
+    }
+    Post.findById(req.params.id)
+      .then(post => {
+        const newComment = {
+          text: req.body.text,
+          name: req.body.name,
+          avatar: req.body.avatar,
+          user: req.user.id
+        };
+
+        // Add new comment to comments array
+        post.comments.unshift(newComment);
+
+        // Save to db
+        post.save().then(post => res.json(post));
+      })
+      .catch(err => res.status(404).json({ postnotfound: "No post found" }));
+  }
+);
+
 module.exports = router;
