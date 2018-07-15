@@ -68,7 +68,7 @@ router.post(
 // @access  private
 router.delete(
   "/:id",
-  passposrt.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", { session: false }),
   (req, res) => {
     Profile.findOne({ user: req.user.id }).then(profile => {
       Post.findById(req.params.id)
@@ -93,7 +93,7 @@ router.delete(
 // @access  private
 router.post(
   "/like/:id",
-  passposrt.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", { session: false }),
   (req, res) => {
     Profile.findOne({ user: req.user.id }).then(profile => {
       Post.findById(req.params.id)
@@ -124,7 +124,7 @@ router.post(
 // @access  private
 router.post(
   "/unlike/:id",
-  passposrt.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", { session: false }),
   (req, res) => {
     Profile.findOne({ user: req.user.id }).then(profile => {
       Post.findById(req.params.id)
@@ -191,7 +191,7 @@ router.post(
 // @route   DELETE api/posts/comment/:id/:comment_id
 // @desc    Delete a comment from a post
 // @access  private
-router.post(
+router.delete(
   "/comment/:id/:comment_id",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
